@@ -13,12 +13,13 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public List<User> getAllUsers() {
+    public User saveUser(User user) {
+        return userRepository.save(user);
+    }
+
+    public List<User> findAllUsers() {
         return userRepository.findAll();
     }
 
-    public Object createUser(User user) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createUser'");
-    }
+    
 }
