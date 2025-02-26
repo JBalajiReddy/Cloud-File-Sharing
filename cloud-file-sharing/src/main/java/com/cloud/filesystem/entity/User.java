@@ -1,16 +1,24 @@
 package com.cloud.filesystem.entity;
 
+import java.io.Serializable;
 import java.sql.Date;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.context.support.BeanDefinitionDsl.Role;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,38 +30,22 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements Serializable, UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String username;
 
-    @Column(nullable = false, unique = true)
-    private String email;
-
-    @JsonIgnore
-    @Column(nullable = false)
     private String password;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private Date createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private Date updatedAt;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<File> files;
-
     @ManyToMany
-    @JoinTable(name = "user_shared_files", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "file_id"))
-    private List<Share> shares;
+    @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles;
 
-    // Getters and setters
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -70,6 +62,14 @@ public class User {
         this.username = username;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password;
+    }
+
     public String getEmail() {
         return email;
     }
@@ -78,35 +78,52 @@ public class User {
         this.email = email;
     }
 
-    public String getPassword() {
-        return password;
+    public Set<Role> getRoles() {
+        return roles;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
     }
 
-    public Date getCreatedAt() {
-        return createdAt;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return getRoles();
     }
 
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
     }
 
-    public Date getUpdatedAt() {
-        return updatedAt;
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
     }
 
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
     }
 
-    public List<File> getFiles() {
-        return files;
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 
-    public void setFiles(List<File> files) {
-        this.files = files;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id) &&
+                Objects.equals(username, user.username);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, username);
     }
 }
