@@ -2,6 +2,7 @@ package com.cloud.filesystem.controller;
 
 import org.springframework.web.bind.annotation.*;
 
+import com.cloud.filesystem.dto.UserDTO;
 import com.cloud.filesystem.entity.User;
 import com.cloud.filesystem.service.UserService;
 
@@ -17,41 +18,32 @@ import org.springframework.http.ResponseEntity;
 @RequestMapping("/api/users")
 public class UserController {
 
-    private final UserService userService;
-
     @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
+    private UserService userService;
 
-    @PostMapping("/create")
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        User createdUser = userService.createUser(user);
-        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
-    }
-
-    @GetMapping("/all")
-    public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userService.getAllUsers();
-        return new ResponseEntity<>(users, HttpStatus.OK);
+    @GetMapping
+    public List<User> getAllUsers() {
+        return userService.findAllUsers();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        User user = userService.getUserById(id);
-        return new ResponseEntity<>(user, HttpStatus.OK);
+    public User getUserById(@PathVariable Long id) {
+        return userService.findUserById(id);
     }
 
-    @PutMapping("/{id}/update")
-    public ResponseEntity<User> updateUser(@PathVariable Long id,
-            @RequestBody User user) {
-        User updatedUser = userService.updateUser(id, user);
-        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+    @PostMapping
+    public User createUser(@RequestBody User user) {
+        return userService.saveUser(user);
     }
 
-    @DeleteMapping("/{id}/delete")
-    public ResponseEntity<HttpStatus> deleteUser(@PathVariable Long id) {
+    @PutMapping("/{id}")
+    public User updateUser(@PathVariable Long id, @RequestBody User user) {
+        return userService.updateUser(id, user);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
 }
